@@ -11,8 +11,8 @@ let exec = require('child_process').exec;
 
 let path = {
     build: {
-        spec: './../web/docs/spec/',
-        web: './../web/docs/sandbox/'
+        spec: './../public/docs/spec/',
+        web: './../public/docs/sandbox/'
     },
     src: {
         spec: './spec/**/*'
@@ -31,6 +31,7 @@ gulp.task('clean', function (cb) {
 gulp.task('build-spec', ['clean'], function (cb) {
     return gulp.src(path.src.spec)
         .pipe(replace('#{{ BASE_URI }}#', process.env.API_BASE_URI))
+        .pipe(replace('#{{ API_NAME }}#', process.env.API_NAME))
         .pipe(gulp.dest(path.build.spec))
         ;
 });
@@ -56,4 +57,9 @@ gulp.task('build-sandbox', function (cb) {
     });
 });
 
-gulp.task('build', sequence('validate', 'clean', 'build-spec', 'build-sandbox'));
+gulp.task('copy-realtime-doc', function () {
+    gulp.src('./realtime.html')
+        .pipe(gulp.dest('../public/docs/'));
+});
+
+gulp.task('build', sequence('validate', 'clean', 'build-spec', 'build-sandbox', 'copy-realtime-doc'));

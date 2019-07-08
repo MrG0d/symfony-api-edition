@@ -23,7 +23,7 @@ class ParamWrapper
      * ParamWrapper constructor.
      * @param $class
      * @param array $criteria
-     * @param string $path
+     * @param string|array $path
      */
     public function __construct($class, array $criteria, $path = 'id')
     {
@@ -65,9 +65,9 @@ class ParamWrapper
     }
 
     /**
-     * @return string
+     * @return string|array
      */
-    public function getPath(): string
+    public function getPath()
     {
         return $this->path;
     }

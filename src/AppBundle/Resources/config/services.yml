@@ -20,5 +20,5 @@ services:
     app.service.update_token_sender:
         class: AppBundle\Service\UpdateTokenSender\UpdateTokenSender
         public: true
-        arguments: ["@requestum_email_sender", "%default_email_from%", "%update_token_links%"]
+        arguments: ["@requestum_email_sender", "%env(DEFAULT_EMAIL_FROM)%", "%env(UPDATE_TOKEN_LINKS)%"]
 

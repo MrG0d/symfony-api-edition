@@ -16,7 +16,7 @@ trait ORMTestCaseTrait
 
     public function setupORMTestCaseTrait()
     {
-        $this->em = $this->container->get('doctrine.orm.entity_manager');
+        $this->em = static::$container->get('doctrine.orm.entity_manager');
         $this->em->getConnection()->beginTransaction();
     }
 
@@ -27,7 +27,7 @@ trait ORMTestCaseTrait
 
     protected function loadFixtures(array $classNames, $omName = null, $registryName = 'doctrine', $purgeMode = null)
     {
-        $loader = new ContainerAwareLoader($this->container);
+        $loader = new ContainerAwareLoader(static::$container);
 
         foreach ($classNames as $className) {
             $loader->addFixture(new $className);
@@ -35,5 +35,13 @@ trait ORMTestCaseTrait
 
         $executor = new ORMExecutor($this->em);
         $executor->execute($loader->getFixtures(), true);
+    }
+
+    /**
+     * @return EntityManager
+     */
+    public function em()
+    {
+        return $this->em;
     }
 }

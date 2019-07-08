@@ -2,15 +2,15 @@
 
 namespace AppBundle\DataFixtures\Test;
 
-use AppBundle\DataFixtures\ORM\LoadSiteData;
 use AppBundle\Entity\User;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\Persistence\ObjectManager;
 
 /**
  * Class LoadUserData
  */
-class LoadUserData extends AbstractFixture
+class LoadUserData extends AbstractFixture implements FixtureGroupInterface
 {
     /**
      * {@inheritDoc}
@@ -36,5 +36,13 @@ class LoadUserData extends AbstractFixture
 
         $manager->persist($user);
         $manager->flush();
+    }
+
+    /**
+     * @return array
+     */
+    public static function getGroups(): array
+    {
+        return ['test'];
     }
 }

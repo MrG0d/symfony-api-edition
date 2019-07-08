@@ -11,9 +11,6 @@ abstract class AbstractActionTest extends KernelTestCase
     use RestCrudTestCaseTrait;
     use ORMTestCaseTrait;
 
-    /** @var ContainerInterface */
-    private $container;
-
     /** @var  Client */
     protected $client;
 
@@ -23,9 +20,9 @@ abstract class AbstractActionTest extends KernelTestCase
 
         static::bootKernel();
 
-        $this->container = static::$kernel->getContainer();
+//        parent::$container = static::$kernel->getContainer();
 
-        $this->client = $this->container->get('test.client');
+        $this->client = static::$container->get('test.client');
         $this->client->disableReboot();
 
         $this->callTraitHookMethod('setup');
@@ -40,7 +37,7 @@ abstract class AbstractActionTest extends KernelTestCase
 
     protected function getContainer()
     {
-        return $this->container;
+        return static::$container;
     }
 
     protected function getClient()

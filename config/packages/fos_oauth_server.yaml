@@ -1,0 +1,11 @@
+fos_oauth_server:
+    db_driver: orm
+    client_class:        AuthBundle\Entity\Client
+    access_token_class:  AuthBundle\Entity\AccessToken
+    refresh_token_class: AuthBundle\Entity\RefreshToken
+    auth_code_class:     AuthBundle\Entity\AuthCode
+    service:
+        user_provider: auth.security.user_provider
+        options:
+            access_token_lifetime: 1209600
+            refresh_token_lifetime: 1209600

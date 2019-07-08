@@ -2,6 +2,7 @@
 
 namespace AppBundle\DataFixtures\Test;
 
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Common\Persistence\ObjectManager;
@@ -11,7 +12,7 @@ use AuthBundle\Entity\AccessToken;
 /**
  * LoadAccessTokenData.
  */
-class LoadUserAccessTokenData extends AbstractFixture implements DependentFixtureInterface
+class LoadUserAccessTokenData extends AbstractFixture implements DependentFixtureInterface, FixtureGroupInterface
 {
     /**
      * {@inheritDoc}
@@ -41,5 +42,13 @@ class LoadUserAccessTokenData extends AbstractFixture implements DependentFixtur
         $manager->persist($accessToken);
 
         $manager->flush();
+    }
+
+    /**
+     * @return array
+     */
+    public static function getGroups(): array
+    {
+        return ['test'];
     }
 }

@@ -1,0 +1,14 @@
+app_bundle:
+    resource: "@AppBundle/Resources/config/routing"
+    prefix:   /api
+    type:     directory
+
+auth:
+    resource: "@AuthBundle/Resources/config/routing.yml"
+    prefix:   /
+
+docs:
+    path: /
+    defaults:
+        _controller: FrameworkBundle:Redirect:urlRedirect
+        path: /docs/sandbox/index.html

@@ -4,11 +4,12 @@ namespace AppBundle\DataFixtures\Test;
 
 use AppBundle\DataFixtures\ORM\LoadClientData;
 use AuthBundle\Entity\AccessToken;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Common\Persistence\ObjectManager;
 
-class LoadAnonymousTokenData extends AbstractFixture implements DependentFixtureInterface
+class LoadAnonymousTokenData extends AbstractFixture implements DependentFixtureInterface, FixtureGroupInterface
 {
     /**
      * {@inheritdoc}
@@ -20,6 +21,11 @@ class LoadAnonymousTokenData extends AbstractFixture implements DependentFixture
         ];
     }
 
+    /**
+     * @param ObjectManager $manager
+     *
+     * @throws \Exception
+     */
     public function load(ObjectManager $manager)
     {
         $accessToken = new AccessToken();
@@ -29,5 +35,13 @@ class LoadAnonymousTokenData extends AbstractFixture implements DependentFixture
 
         $manager->persist($accessToken);
         $manager->flush();
+    }
+
+    /**
+     * @return array
+     */
+    public static function getGroups(): array
+    {
+        return ['test'];
     }
 }

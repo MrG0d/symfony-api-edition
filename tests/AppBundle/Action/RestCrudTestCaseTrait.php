@@ -2,6 +2,8 @@
 
 namespace Tests\AppBundle\Action;
 
+use AppBundle\Entity\User;
+use AuthBundle\Entity\AccessToken;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -18,6 +20,25 @@ trait RestCrudTestCaseTrait
         'Accept' => 'application/json',
         'HTTP_Authorization' => 'Bearer AccessToken_For_Client',
     ];
+
+    /**
+     * @param $url
+     * @param int $statusCode
+     * @return mixed
+     */
+    public function get($url, $statusCode = Response::HTTP_OK)
+    {
+        $this->getClient()->request(
+            Request::METHOD_GET,
+            $url,
+            [],
+            [],
+            $this->headers
+        );
+        $this->assertEquals($statusCode, $this->getClient()->getResponse()->getStatusCode());
+
+        return $this->getJsonResponse();
+    }
 
     /**
      * @param int|null $id
@@ -102,11 +123,14 @@ trait RestCrudTestCaseTrait
      * @param null $url
      * @param int $statusCode
      * @param array $contains
+     * @param array $files
      * @return mixed
      */
-    public function createItem($data, $url = null, $statusCode = Response::HTTP_CREATED, $contains = [])
+    public function createItem($data, $url = null, $statusCode = Response::HTTP_CREATED, $contains = [], $files = [])
     {
-        $this->getClient()->request(Request::METHOD_POST, $this->getResourceUrl($url), $data, [], $this->headers);
+        $this->processParamWrappers($data);
+
+        $this->getClient()->request(Request::METHOD_POST, $this->getResourceUrl($url), $data, $files, $this->headers);
         $this->assertEquals($statusCode, $this->getClient()->getResponse()->getStatusCode());
 
         foreach ((array)$contains as $token) {
@@ -140,7 +164,7 @@ trait RestCrudTestCaseTrait
         $this->getClient()
             ->request($method, $this->getResourceUrl($url).'/'.$id, $data, [], $this->headers);
 
-        $this->assertEquals($statusCode, $this->getClient()->getResponse()->getStatusCode());
+        $this->assertEquals($statusCode, $this->getClient()->getResponse()->getStatusCode(), $this->getClient()->getResponse()->getContent());
 
         foreach ((array)$contains as $token) {
             $this->assertContains($token, $this->getClient()->getResponse()->getContent());
@@ -167,12 +191,15 @@ trait RestCrudTestCaseTrait
         $contains = [],
         $method = Request::METHOD_PATCH
     ) {
+        $this->processParamWrapper($id);
         $id = $id ?: $this->getExistedObjectId();
 
-        $this->getClient()
-            ->request($method, $this->getResourceUrl($url)."/$id/transit", $data, [], $this->headers);
+        $idPart = is_array($id) ? implode('/', $id) : $id;
 
-        $this->assertEquals($statusCode, $this->getClient()->getResponse()->getStatusCode());
+        $this->getClient()
+            ->request($method, $this->getResourceUrl($url)."/$idPart/transit", $data, [], $this->headers);
+
+        $this->assertEquals($statusCode, $this->getClient()->getResponse()->getStatusCode(), $this->getClient()->getResponse()->getContent());
 
         foreach ((array)$contains as $token) {
             $this->assertContains($token, $this->getClient()->getResponse()->getContent());
@@ -184,14 +211,16 @@ trait RestCrudTestCaseTrait
     /**
      * {@inheritdoc}
      */
-    public function deleteItem($id = null, $statusCode = Response::HTTP_NO_CONTENT)
+    public function deleteItem($id = null, $statusCode = Response::HTTP_NO_CONTENT, $softDelete = false)
     {
         $this->processParamWrapper($id);
         $id = $id ?: $this->getExistedObjectId();
 
+        $idPart = is_array($id) ? implode('/', $id) : $id;
+
         $this->getClient()->request(
             Request::METHOD_DELETE,
-            $this->getResourceUrl().'/'.$id,
+            $this->getResourceUrl().'/'.$idPart,
             [],
             [],
             $this->headers
@@ -200,7 +229,7 @@ trait RestCrudTestCaseTrait
 
         $result = $this->getContainer()->get('doctrine.orm.entity_manager')->find($this->getEntityName(), $id);
 
-        if ($statusCode == Response::HTTP_NO_CONTENT) {
+        if ($statusCode == Response::HTTP_NO_CONTENT && !$softDelete) {
             $this->assertNull($result);
         } else {
             $this->assertNotNull($result);
@@ -248,7 +277,7 @@ trait RestCrudTestCaseTrait
     /**
      * {@inheritdoc}
      */
-    protected function getObjectOf($class, $criteria = null)
+    protected function getObjectOf($class, $criteria = null, $fail = true)
     {
         $criteria = $criteria ?: $this->findOneBy;
 
@@ -257,11 +286,29 @@ trait RestCrudTestCaseTrait
             ->findOneBy($criteria)
         ;
 
-        if (!$object) {
-            static::fail('test object not found');
+        if (!$object && $fail) {
+            static::fail('test object ('.$class.') not found: ' . print_r($criteria, true));
         }
 
         return $object;
+    }
+
+    /**
+     * @param $class
+     * @param null $criteria
+     *
+     * @return array
+     */
+    protected function getObjectsOf($class, $criteria = null)
+    {
+        $criteria = $criteria ?: $this->findOneBy;
+
+        $objects = $this->getClient()->getContainer()->get('doctrine.orm.default_entity_manager')
+            ->getRepository($class)
+            ->findBy($criteria)
+        ;
+
+        return $objects;
     }
 
     /**
@@ -310,13 +357,138 @@ trait RestCrudTestCaseTrait
     protected function processParamWrapper(&$value)
     {
         if (is_object($value) && $value instanceof ParamWrapper) {
-            $entity = $this->getObjectOf($value->getClass(), $value->getCriteria());
+            $criteria = $value->getCriteria();
+            $this->processParamWrappers($criteria);
 
-            $value = PropertyAccess::createPropertyAccessorBuilder()
-                ->enableExceptionOnInvalidIndex()
-                ->getPropertyAccessor()
-                ->getValue($entity, $value->getPath())
-            ;
+            $entity = $this->getObjectOf($value->getClass(), $criteria);
+
+            $path = $value->getPath();
+            $result = [];
+
+            foreach ((array) $path as $key => $singlePath) {
+                $result[$key] = PropertyAccess::createPropertyAccessorBuilder()
+                    ->enableExceptionOnInvalidIndex()
+                    ->getPropertyAccessor()
+                    ->getValue($entity, $singlePath)
+                ;
+            }
+
+            $value = count($result) > 1 ? $result : $result[0];
         }
+    }
+
+    /**
+     * @param array $response
+     * @param string $orderBy
+     * @param \Closure|null $compareFunction
+     */
+    public function sortingCheck(array $response, string $orderBy, ?\Closure $compareFunction = null)
+    {
+        $count = count($response['entities']);
+
+        if ($count < 2) {
+            throw new \LogicException('To check the sorting you need at least 2 items in the response (count = ' . $count . ')');
+        }
+        $parts = explode('|', $orderBy);
+        $field = $parts[0];
+        $direct = $parts[1] ?? 'asc';
+        $directNumber = $direct === 'DESC' || $direct === 'desc' ? 1 : -1;
+
+        for ($i = 1; $i < $count; ++$i) {
+            if ($compareFunction) {
+                $compare = $compareFunction($response['entities'][$i - 1], $response['entities'][$i]);
+            } else {
+                $compare = self::pgCompare($response['entities'][$i - 1][$field], $response['entities'][$i][$field]);
+            }
+
+            if ($directNumber !== $compare && $compare !== 0) {
+                self::fail('Value of "'.$field.'" property of the '.($i - 1).' and '.$i.' element does not correspond to the order');
+            }
+        }
+    }
+
+    /**
+     * @param $value
+     *
+     * @return string
+     */
+    public static function pgPrepareCompareValue($value)
+    {
+        if (is_string($value)) {
+            $value = strtr($value, [' ' => '', '-' => '']);
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param $left
+     * @param $right
+     *
+     * @return int
+     */
+    public static function pgCompare($left, $right)
+    {
+        $left = self::pgPrepareCompareValue($left);
+        $right = self::pgPrepareCompareValue($right);
+
+        if ($left !== null && $right === null) {
+            return -1;
+        }
+
+        if ($left === null && $right !== null) {
+            return 1;
+        }
+
+        return $left <=> $right;
+    }
+
+    /**
+     * @param $token - AccessToken_For_Admin | Bearer AccessToken_For_Admin
+     *
+     * @return User|null
+     */
+    public function getUserByToken($token)
+    {
+        if (strpos($token, 'Bearer') > -1) {
+            $token = explode(' ', $token);
+            $token = $token[1] ?? $token[0];
+        }
+
+        /** @var AccessToken $token */
+        $token = $this->getObjectOf(AccessToken::class, ['token' => $token]);
+
+        return $token ? $token->getUser() : null;
+    }
+
+    public static function assertEqualsArrays($expected, $actual, $message = 'Array not equals')
+    {
+        if (count(array_diff($expected, $actual)) !== 0) {
+            echo $message, "\n";
+            echo "Expected: \n";
+            print_r($expected);
+            echo "Actual: \n";
+            print_r($actual);
+            self::fail();
+        }
+
+        self::assertTrue(true);
+    }
+
+    /**
+     * @param $startId
+     * @param null $class
+     *
+     * @return mixed
+     */
+    protected function getNonExistentId($class, $startId = 100)
+    {
+        $repository =  $this->getClient()->getContainer()->get('doctrine.orm.default_entity_manager')->getRepository($class);
+
+        while ($repository->find($startId)) {
+            $startId += 100;
+        }
+
+        return $startId;
     }
 }

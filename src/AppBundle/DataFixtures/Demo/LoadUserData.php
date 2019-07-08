@@ -4,6 +4,7 @@ namespace AppBundle\DataFixtures\Demo;
 
 use AppBundle\DataFixtures\ORM\LoadSiteData;
 use AppBundle\Entity\User;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Common\Persistence\ObjectManager;
@@ -11,7 +12,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 /**
  * Class LoadUserData
  */
-class LoadUserData extends AbstractFixture
+class LoadUserData extends AbstractFixture implements FixtureGroupInterface
 {
 
     /**
@@ -38,5 +39,13 @@ class LoadUserData extends AbstractFixture
         $manager->persist($user1);
 
         $manager->flush();
+    }
+
+    /**
+     * @return array
+     */
+    public static function getGroups(): array
+    {
+        return ['demo'];
     }
 }
