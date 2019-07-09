@@ -239,8 +239,8 @@ class UserTest extends AbstractActionTest
         /** @var User $user */
         $user = $this->getObjectOf(User::class, ['email' => 'user1@gmail.com']);
 
+        $this->enableProfiler();
         $client = $this->getClient();
-        $client->enableProfiler();
 
         $client->request(
             Request::METHOD_POST,
@@ -256,11 +256,9 @@ class UserTest extends AbstractActionTest
         $this->assertNotNull($user->getConfirmationToken());
         $this->assertStringStartsWith('t_', $user->getConfirmationToken());
 
-        /** @var MessageDataCollector $emailCollector */
-        $emailCollector = $client->getProfile()->getCollector('swiftmailer');
-        $this->assertSame(1, $emailCollector->getMessageCount());
-        /** @var \Swift_Message $message */
-        $message = $emailCollector->getMessages()[0];
+        $this->assertSame(1, $this->getMessageCount());
+
+        $message = $this->getMessage();
         $this->assertArrayHasKey($user->getEmail(), $message->getTo());
 
         $this->assertContains('password reset', $message->getBody());

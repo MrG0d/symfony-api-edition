@@ -13,6 +13,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  * @ORM\Table(name="users")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\UserRepository")
  * @ORM\EntityListeners({"AppBundle\EventListener\UserListener"})
+ *
  * @UniqueEntity("email")
  */
 class User implements UserInterface
@@ -35,6 +36,7 @@ class User implements UserInterface
      * @var string User name
      *
      * @ORM\Column(type="string", nullable=true)
+     *
      * @Assert\NotBlank
      *
      * @Groups("default")
@@ -45,6 +47,7 @@ class User implements UserInterface
      * @var string User email
      *
      * @ORM\Column(type="string", unique=true)
+     *
      * @Assert\NotBlank
      * @Assert\Email()
      *
@@ -54,19 +57,22 @@ class User implements UserInterface
 
     /**
      * @var string Encrypted password.
+     *
      * @ORM\Column(type="string")
      */
     protected $password;
 
     /**
-     * @var string Encrypted password.
+     * @var string Plain password.
+     *
      * @ORM\Column(type="string", nullable=true)
+     *
      * @Assert\NotBlank(groups={"default"})
      */
     protected $plainPassword;
 
     /**
-     * @var string User level
+     * @var boolean
      *
      * @ORM\Column(type="boolean")
      *
@@ -76,8 +82,8 @@ class User implements UserInterface
 
     /**
      * @var string
-     * @ORM\Column(type="string", nullable=true)
      *
+     * @ORM\Column(type="string", nullable=true)
      */
     protected $confirmationToken;
 
