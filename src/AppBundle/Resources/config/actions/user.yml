@@ -1,23 +1,27 @@
 services:
     action.user.list:
+        public: true
         parent: core.action.abstract
         class: Requestum\ApiBundle\Action\ListAction
         arguments:
             - AppBundle\Entity\User
 
     action.user.fetch:
+        public: true
         parent: core.action.abstract
         class: Requestum\ApiBundle\Action\FetchAction
         arguments:
             - AppBundle\Entity\User
 
     action.user.fetch_current:
+        public: true
         parent: core.action.abstract
         class: AppBundle\Action\User\FetchCurrentAction
         arguments:
             - AppBundle\Entity\User
 
     action.user.create:
+        public: true
         parent: core.action.abstract
         class: Requestum\ApiBundle\Action\CreateAction
         arguments:
@@ -25,6 +29,7 @@ services:
             - AppBundle\Form\User\UserType
 
     action.user.update:
+        public: true
         parent: core.action.abstract
         class: Requestum\ApiBundle\Action\UpdateAction
         arguments:
@@ -32,16 +37,19 @@ services:
             - AppBundle\Form\User\UserType
 
     action.user.delete:
+        public: true
         parent: core.action.abstract
         class: Requestum\ApiBundle\Action\DeleteAction
         arguments:
             - AppBundle\Entity\User
 
     action.user.request_update_token:
+        public: true
         parent: core.action.abstract
         class: AppBundle\Action\User\RequestUpdateTokenAction
 
     action.user.update_by_token:
+        public: true
         parent: core.action.abstract
         class: Requestum\ApiBundle\Action\UpdateAction
         arguments:

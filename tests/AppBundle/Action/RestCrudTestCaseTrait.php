@@ -4,6 +4,7 @@ namespace Tests\AppBundle\Action;
 
 use AppBundle\Entity\User;
 use AuthBundle\Entity\AccessToken;
+use Swift_Message;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -99,7 +100,7 @@ trait RestCrudTestCaseTrait
         $headers = $headers ? $headers : $this->headers;
         $this->processParamWrappers($filters);
         $this->getClient()->request(Request::METHOD_GET, $this->getResourceUrl($url), $filters, [], $headers);
-        $this->assertEquals($statusCode, $this->getClient()->getResponse()->getStatusCode());
+        $this->assertEquals($statusCode, $this->getClient()->getResponse()->getStatusCode(), $this->getClient()->getResponse()->getContent());
 
         foreach ((array)$contains as $token) {
             $this->assertContains($token, $this->getClient()->getResponse()->getContent());
@@ -131,7 +132,7 @@ trait RestCrudTestCaseTrait
         $this->processParamWrappers($data);
 
         $this->getClient()->request(Request::METHOD_POST, $this->getResourceUrl($url), $data, $files, $this->headers);
-        $this->assertEquals($statusCode, $this->getClient()->getResponse()->getStatusCode());
+        $this->assertEquals($statusCode, $this->getClient()->getResponse()->getStatusCode(), $this->getClient()->getResponse()->getContent());
 
         foreach ((array)$contains as $token) {
             $this->assertContains($token, $this->getClient()->getResponse()->getContent());
@@ -490,5 +491,32 @@ trait RestCrudTestCaseTrait
         }
 
         return $startId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMessageCount()
+    {
+        $emailCollector = $this->getClient()->getProfile()->getCollector('swiftmailer');
+
+        return $emailCollector->getMessageCount();
+    }
+
+    /**
+     * @param int $i
+     *
+     * @return Swift_Message | null
+     */
+    public function getMessage($i = 0)
+    {
+        $messages = $this->getClient()->getProfile()->getCollector('swiftmailer')->getMessages();
+
+        return isset($messages[$i]) ? $messages[$i] : null;
+    }
+
+    public function enableProfiler()
+    {
+        $this->getClient()->enableProfiler();
     }
 }

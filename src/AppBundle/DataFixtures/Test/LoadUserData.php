@@ -21,7 +21,7 @@ class LoadUserData extends AbstractFixture implements FixtureGroupInterface
         $user->setEmail('user1@gmail.com');
         $user->setName('User');
         $user->setEnabled(true);
-        $user->setPassword('123');
+        $user->setPlainPassword('123');
         $this->addReference('user1', $user);
 
         $manager->persist($user);
@@ -31,7 +31,7 @@ class LoadUserData extends AbstractFixture implements FixtureGroupInterface
         $user->setEmail('user2@gmail.com');
         $user->setName('User2');
         $user->setEnabled(true);
-        $user->setPassword('123');
+        $user->setPlainPassword('123');
         $this->addReference('user2', $user);
 
         $manager->persist($user);

@@ -40,6 +40,7 @@ class UserTest extends AbstractActionTest
     public function accessTokenProvider()
     {
         return [
+            # 0
             [
                 [
                     'client_id' => LoadClientData::CLIENT_ID,
@@ -48,6 +49,7 @@ class UserTest extends AbstractActionTest
                 ],
                 200
             ],
+            # 1
             [
                 [
                     'client_id' => 'wrong',
@@ -56,6 +58,7 @@ class UserTest extends AbstractActionTest
                 ],
                 400
             ],
+            # 2
             [
                 [
                     'client_id' => LoadClientData::CLIENT_ID,
@@ -66,6 +69,7 @@ class UserTest extends AbstractActionTest
                 ],
                 200
             ],
+            # 3
             [
                 [
                     'client_id' => LoadClientData::CLIENT_ID,
@@ -247,7 +251,7 @@ class UserTest extends AbstractActionTest
             [],
             $this->headers
         );
-        $this->assertEquals(204, $this->getClient()->getResponse()->getStatusCode());
+        $this->assertEquals(204, $this->getClient()->getResponse()->getStatusCode(), $this->getClient()->getResponse()->getContent());
 
         $this->assertNotNull($user->getConfirmationToken());
         $this->assertStringStartsWith('t_', $user->getConfirmationToken());

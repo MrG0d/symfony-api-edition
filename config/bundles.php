@@ -17,4 +17,5 @@ return [
     AppBundle\AppBundle::class => ['all' => true],
     AuthBundle\AuthBundle::class => ['all' => true],
     FOS\OAuthServerBundle\FOSOAuthServerBundle::class => ['all' => true],
+    Symfony\Bundle\WebProfilerBundle\WebProfilerBundle::class => ['dev' => true, 'test' => true],
 ];

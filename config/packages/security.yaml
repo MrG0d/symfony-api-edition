@@ -4,9 +4,8 @@ security:
         AppBundle\Entity\User: bcrypt
 
     role_hierarchy:
-        ROLE_DRIVER:           ROLE_USER
-        ROLE_ADMIN:            ROLE_DRIVER
-        ROLE_SUPER_ADMIN:      ROLE_ADMIN
+        ROLE_ADMIN:       ROLE_USER
+        ROLE_SUPER_ADMIN: ROLE_ADMIN
 
     # http://symfony.com/doc/current/book/security.html#where-do-users-come-from-user-providers
     providers:
@@ -35,12 +34,8 @@ security:
         allow_if_all_abstain: true
 
     access_control:
-
-        - { path: ^/api/users/\d+$, methods: [PATCH, DELETE], role: IS_AUTHENTICATED_ANONYMOUSLY}
-        - { path: ^/api/users$, methods: [POST, PUT], role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/users$, method: POST, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/users/.+/update-token$, method: POST, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/users/t_.*$, method: PATCH, role: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/users, method: GET, role: ROLE_ADMIN }
-
         - { path: ^/api, role: ROLE_USER }
 

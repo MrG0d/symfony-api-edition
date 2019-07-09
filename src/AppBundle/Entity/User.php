@@ -61,7 +61,7 @@ class User implements UserInterface
     /**
      * @var string Encrypted password.
      * @ORM\Column(type="string", nullable=true)
-     * @Assert\NotBlank
+     * @Assert\NotBlank(groups={"default"})
      */
     protected $plainPassword;
 

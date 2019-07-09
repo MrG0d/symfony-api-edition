@@ -47,9 +47,9 @@ class UpdateTokenSender
                 $this->emailSender->sendType(new TemplateType(
                     $this->defaultEmailFrom,
                     $user->getEmail(),
-                    'Retrieve your password on toto.com',
+                    'Retrieve your password on site.com',
                     'AppBundle:Emails:reset_password.html.twig',
-                    ['link' => str_replace('{token}', $user->getConfirmationToken(), $this->linkTemplates[$transport])]
+                    ['link' => str_replace('__token__', $user->getConfirmationToken(), $this->linkTemplates[$transport])]
                 ));
 
                 break;

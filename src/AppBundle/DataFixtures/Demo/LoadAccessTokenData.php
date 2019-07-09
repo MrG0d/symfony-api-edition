@@ -45,6 +45,12 @@ class LoadAccessTokenData extends AbstractFixture implements DependentFixtureInt
         $accessToken->setExpiresAt((new \DateTime('+1 year'))->getTimestamp());
         $manager->persist($accessToken);
 
+        $accessToken = new AccessToken();
+        $accessToken->setClient($this->getReference('auth-client'));
+        $accessToken->setToken('AccessToken_For_Client');
+        $accessToken->setExpiresAt((new \DateTime('+1 year'))->getTimestamp());
+        $manager->persist($accessToken);
+
         $manager->flush();
     }
 
